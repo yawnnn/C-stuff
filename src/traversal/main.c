@@ -4,7 +4,8 @@
 
 typedef struct node {
     int id;
-    int links;
+    int edges;
+    int *weights;
     struct node **neighbors;
 } Node;
 
@@ -27,6 +28,9 @@ Graph *generate_graph(int size) {
     Graph *graph;
     Node **available_neighbors;
     int idx;
+    int free_neighbor;
+    int idx_free_neighbor;
+    int size_available_neighbors;
 
     srand(time(NULL));
 
@@ -39,28 +43,45 @@ Graph *generate_graph(int size) {
     graph->size = size;
 
     for (int i = 0; i < size; i++) {
-        graph->nodes[i].id = i;    
+        graph->nodes[i].id = i;
     }
 
     if (size > 1) {
         for (int i = 0; i < size; i++) {
-            graph->nodes[i].links = randr(1, size - 1);
-            graph->nodes[i].neighbors = (Node**)malloc(sizeof(Node*) * graph->nodes[i].links);
+            graph->nodes[i].edges = randr(1, size - 1);
+            graph->nodes[i].weights = (int*)malloc(sizeof(int) * graph->nodes[i].edges);
+            graph->nodes[i].neighbors = (Node**)malloc(sizeof(Node*) * graph->nodes[i].edges);
+            memset(graph->nodes[i].neighbors, 0, sizeof(Node**) * graph->nodes[i].edges);
+        }
+
+        for (int i = 0; i < size; i++) {
+            size_available_neighbors = 0;
 
             for (int j = 0; j < size; j++) {
-                available_neighbors[j] = &graph->nodes[j];
-            }
-            available_neighbors[i] = available_neighbors[size - 1];
+                free_neighbor = 0;
 
-            for (int j = 0; j < graph->nodes[i].links; j++) {
-                idx = randr(0, size - 2 - j);
+                for (int k = 0; k < graph->nodes[j].edges && !free_neighbor; k++) {
+                    if (graph->nodes[j].neighbors[k] == NULL && i != j) {
+                        free_neighbor = 1;
+                        idx_free_neighbor = k;
+                    }
+                }
+
+                if (free_neighbor) {
+                    available_neighbors[size_available_neighbors] = &graph->nodes[j];
+                    size_available_neighbors++;
+                }
+            }
+
+            for (int j = 0; j < graph->nodes[i].edges; j++) {
+                idx = randr(0, size_available_neighbors - 1 - j);
                 graph->nodes[i].neighbors[j] = available_neighbors[idx];
-                available_neighbors[idx] = available_neighbors[size - 2 - j];
+                available_neighbors[idx]->neighbors[??] = &graph->nodes[i];
+                available_neighbors[idx] = available_neighbors[size_available_neighbors - 1 - j];
             }
-
         }
     } else {
-        graph->nodes[0].links = 0;
+        graph->nodes[0].edges = 0;
         graph->nodes[0].neighbors = NULL;
     }
 
